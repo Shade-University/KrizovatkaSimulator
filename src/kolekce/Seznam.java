@@ -1,10 +1,7 @@
 package kolekce;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 /**
@@ -13,140 +10,278 @@ import java.util.function.Function;
  */
 public class Seznam<E> implements IKolekce<E> {
 
-    private final Integer defaultniVelikost = 10;
+    //Prvky
+    private Prvek prvni;
+    private Prvek posledni;
+    private Prvek aktualni;
 
-    private Object[] pole;
-    private Integer maxVelikost;
-    private Integer aktualniVelikost;
-    private Integer pocetElementu;
+    private class Prvek {
 
-    public Seznam() {
+        Prvek dalsi;
+        E data;
+
+        public Prvek(E data) {
+            this(null, data); //TODO nějak změnit ?
+        }
+
+        public Prvek(Prvek dalsi, E data) {
+            this.dalsi = dalsi;
+            this.data = data;
+        }
+    }
+
+    //Vlastnosti
+    private int velikost;
+    private int pocet;
+
+    //Konstruktory
+    public Seznam() throws KolekceException {
         this(Integer.MAX_VALUE);
     }
 
-    public Seznam(Integer velikost) {
-        this.maxVelikost = velikost;
-        pole = new Object[defaultniVelikost];
-        aktualniVelikost = defaultniVelikost;
-        pocetElementu = 0;
+    public Seznam(int velikost) throws KolekceException {
+
+        if (velikost <= 0) {
+            throw new KolekceException("Velikost kolekce je nulová nebo záporná");
+        }
+
+        this.velikost = velikost;
     }
 
-    private void zvetsiPole() {
-        if (aktualniVelikost * 2 <= maxVelikost) {
-            Object[] tempPole = new Object[aktualniVelikost * 2];
-            for (int i = 0; i < pocetElementu; i++) {
-                tempPole[i] = pole[i];
-            }
-            pole = tempPole;
-            aktualniVelikost *= 2;
-        }
-    } //Pokud nepřesáhneme max velikost, zdvojnásob velikost pole
-
-    private void zmensiPole() {
-        if ((aktualniVelikost / 2) > pocetElementu) {
-            Object[] tempPole = new Object[aktualniVelikost / 2];
-            for (int i = 0; i < pocetElementu; i++) {
-                tempPole[i] = pole[i];
-            }
-            pole = tempPole;
-            aktualniVelikost /= 2;
-        }
-    } //Pokud je pole z poloviny prázdné, zmenši ho
-    
-    public int getAktualniVelikost(){
-        return aktualniVelikost;
-    } //Kvůli testu
-    
+    //Gettery
     @Override
     public int getVelikost() {
-        return maxVelikost;
+        return velikost;
     }
 
     @Override
     public int getPocet() {
-        return pocetElementu;
+        return pocet;
     }
 
     @Override
     public boolean jePrazdny() {
-        return pocetElementu == 0;
+        return pocet == 0;
     }
 
     @Override
     public boolean jePlny() {
-        return pocetElementu == maxVelikost;
+        return pocet == velikost;
     }
 
+    //private metody
+    private void reset() {
+        prvni = null;
+        posledni = null;
+        pocet = 0;
+    }
+
+    private Prvek najdiPredposledni() {
+        Prvek p = prvni;
+        while (p.dalsi.dalsi != null) {
+            p = p.dalsi;
+        }
+        return p.dalsi;
+    } //Koukáme o dva kroky dopředu
+
+    private Prvek najdiPredchozi(Prvek p) throws KolekceException {
+        Prvek predchozi = p;
+        while (predchozi.dalsi != null) {
+            if (predchozi.dalsi == aktualni) {
+                return predchozi;
+            }
+            predchozi = predchozi.dalsi;
+        }
+
+        throw new KolekceException("Prvek nebyl nalezen");
+    }
+
+    //public metody
     @Override
     public void pridej(E data) throws KolekceException {
-        if ((pocetElementu + 1) > maxVelikost)
-            throw new KolekceException("Byla přesažena maximální hodnota");
-        
-        if ((pocetElementu + 1) >= aktualniVelikost) {
-            zvetsiPole();
+        if (data == null) {
+            throw new KolekceException("Nebyla vložena data"); //TODO Potřebuju to zde ?
         }
-        pole[pocetElementu] = data;
-        pocetElementu++; //Přehlednější
+        if (pocet >= velikost) {
+            throw new KolekceException("Byla překročena velikost");
+        }
+
+        Prvek p = new Prvek(data);
+        if (prvni == null) {
+            prvni = p;
+            posledni = p;
+            pocet++;
+            return;
+        } //Pokud je seznam prázdný, nastavíme první element
+
+        posledni.dalsi = p;
+        posledni = p;
+        pocet++;
     }
 
     @Override
     public E odeberPrvni() throws KolekceException {
-        if(jePrazdny())
-            throw new KolekceException("Kolekce je prázdná");
-        
-        E prvek = (E) pole[0];
-        for (int i = 0; i < pocetElementu; i++) {
-            pole[i] = pole[i + 1];
+        if (prvni == null) {
+            throw new KolekceException("Seznam je prázdný");
         }
-        pole[pocetElementu - 1] = null;
-        pocetElementu--; //Jde to líp, ale takhle je to přehlednější
-        zmensiPole();
-        return prvek;
+
+        Prvek p = prvni;
+        if (prvni == posledni) {
+            reset();
+            return p.data;
+        } //V seznamu zbyl poslední prvek
+
+        prvni = p.dalsi;
+        pocet--;
+        return p.data;
     }
 
     @Override
     public E odeberPosledni() throws KolekceException {
-        if(jePrazdny())
+        if (posledni == null) {
             throw new KolekceException("Kolekce je prázdná");
-        
-        E prvek = (E) pole[pocetElementu - 1];
-        pole[pocetElementu - 1] = null;
-        pocetElementu--; //Jde to líp, ale takhle je to přehlednější
-        zmensiPole();
-        return prvek;
+        }
+
+        Prvek p = posledni;
+        if (prvni == posledni) {
+            reset();
+            return p.data;
+        } //V seznamu zbyl poslední prvek
+
+        posledni = najdiPredposledni();
+        pocet--;
+        return p.data;
     }
 
     @Override
     public void zrus() {
-        for (int i = 0; i < pocetElementu; i++) {
-            pole[i] = null;
-        }
-        pocetElementu = 0;
+        prvni = null;
+        posledni = null;
+        aktualni = null;
+        pocet = 0;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object[] toArray() {
-        return (E[])Arrays.copyOf(pole, pocetElementu); //TODO Jsou toArray správně ?
+    public E[] toArray() {
+        Object[] result = new Object[pocet];
+        int i = 0;
+        for (Prvek p = prvni; p != null; p = p.dalsi) {
+            result[i++] = p.data;
+        }
+        return (E[]) result;
     }
 
     @Override
     public E[] toArray(E[] array) throws IllegalArgumentException {
-        if (array.length < aktualniVelikost)
-            return (E[]) Arrays.copyOf(pole, pocetElementu, array.getClass());
-        else{
+        if (array.length < pocet) {
             throw new IllegalArgumentException();
         }
-            
+        
+        int i = 0;
+        for (Prvek p = prvni; p != null; p = p.dalsi) {
+            array[i++] = p.data;
+        }
+
+        if (array.length > pocet) {
+            array[pocet] = null;
+        } //Poslední prvek zakončí null
+
+        return array;
     }
 
     @Override
     public E[] toArray(Function<Integer, E[]> createFunction) {
-        throw new UnsupportedOperationException("Not supported yet."); //TODO Co s tím ??
+        return createFunction.apply(pocet);
     }
 
     @Override
     public Iterator<E> iterator() {
-        return (Iterator<E>)Arrays.stream(pole).iterator();
+        return new mujIterator(); //TODO Může být anonymní třída
+    }
+
+    //Nepovinné
+    @Override
+    public void nastavPrvni() throws KolekceException {
+        if (prvni == null) {
+            throw new KolekceException("Kolekce je prázdná");
+        }
+
+        aktualni = prvni;
+    }
+
+    @Override
+    public void prejdiNaDalsi() throws KolekceException {
+        if (aktualni == null) {
+            throw new KolekceException("Není nastaven aktuální prvek");
+        }
+
+        aktualni = aktualni.dalsi;
+    }
+
+    @Override
+    public E zpristupni() throws KolekceException {
+        if (aktualni == null) {
+            throw new KolekceException("Není nastaven aktuální prvek");
+        }
+
+        return aktualni.data;
+    }
+
+    public boolean jeDalsi() throws KolekceException {
+        if (aktualni == null) {
+            throw new KolekceException("Není nastaven aktuální prvek");
+        }
+
+        return aktualni.dalsi != null;
+    }
+
+    @Override
+    public E odeber() throws KolekceException {
+        if (aktualni == null) {
+            throw new KolekceException("Není nastaven aktuální prvek");
+        }
+
+        Prvek p = aktualni;
+
+        aktualni = najdiPredchozi(aktualni);
+        pocet--;
+        return p.data;
+    }
+
+    private class mujIterator implements Iterator<E> {
+
+        Prvek index = prvni;
+
+        @Override
+        public boolean hasNext() {
+            return index != null;
+        }
+
+        @Override
+        public E next() {
+            if (hasNext()) {
+                E data = index.data;
+                index = index.dalsi;
+                return data;
+            }
+
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public void remove() {
+            if (index == null || aktualni == null) {
+                throw new IllegalStateException();
+            }
+            if (aktualni == prvni) {
+                prvni = index;
+            }
+            if (aktualni == posledni) {
+                prvni = null;
+            } //TODO ????
+        }
+
     }
 
 }
