@@ -3,6 +3,7 @@ package kolekce;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -59,6 +60,18 @@ public class SeznamTest {
         int result = instance.getVelikost();
         assertEquals(expResult, result);
     } //TODO Test exception při <= 0, předělat na jednu metodu
+    
+    @Test(expected = KolekceException.class)
+    public void testVelikostException() throws KolekceException{
+        System.out.println("velikostException");
+        Seznam instance = new Seznam(-1);
+    }
+    
+    @Test(expected = KolekceException.class)
+    public void testVelikostException002() throws KolekceException{
+        System.out.println("velikostException2");
+        Seznam instance = new Seznam(0);
+    }
 
     /**
      * Test of getPocet method, of class Seznam.
@@ -141,7 +154,7 @@ public class SeznamTest {
      * Test of pridej method, of class Seznam.
      */
     @Test
-    public void testPridej() throws Exception {
+    public void testPridej() throws KolekceException {
         System.out.println("pridej");
         Object data = "Test";
         Seznam instance = new Seznam();
@@ -155,12 +168,21 @@ public class SeznamTest {
         assertEquals(data, returnedData);
     } //TODO Test při přeplnění Exception
     
+    @Test(expected = KolekceException.class)
+    public void testPridejException() throws KolekceException {
+        System.out.println("pridejException");
+        Object data = "Test";
+        Seznam instance = new Seznam(1);
+        instance.pridej(data);
+        instance.pridej(data);
+    }
+    
 
     /**
      * Test of odeberPrvni method, of class Seznam.
      */
     @Test
-    public void testOdeberPrvni() throws Exception {
+    public void testOdeberPrvni() throws KolekceException {
         System.out.println("odeberPrvni");
         Seznam<Integer> instance = new Seznam();
         instance.pridej(10);
@@ -175,12 +197,19 @@ public class SeznamTest {
         result = instance.getPocet();
         assertEquals(expResult, result);
     }
+    
+    @Test(expected = KolekceException.class)
+    public void testOdeberException() throws KolekceException {
+        System.out.println("odeberPrvni");
+        Seznam<Integer> instance = new Seznam();
+        instance.odeberPrvni();
+    }
 
     /**
      * Test of odeberPosledni method, of class Seznam.
      */
     @Test
-    public void testOdeberPosledni() throws Exception {
+    public void testOdeberPosledni() throws KolekceException {
         System.out.println("odeberPosledni");
         Seznam<Integer> instance = new Seznam();
         instance.pridej(10);
@@ -194,6 +223,13 @@ public class SeznamTest {
         expResult = 2;
         result = instance.getPocet();
         assertEquals(expResult, result);
+    }
+    
+    @Test(expected = KolekceException.class)
+    public void testOdeberPosledniException() throws KolekceException {
+        System.out.println("odeberPosledni");
+        Seznam<Integer> instance = new Seznam();
+        instance.odeberPosledni();
     }
 
     /**
@@ -224,7 +260,7 @@ public class SeznamTest {
         expResult[0] = 1;
         expResult[1] = 2;
         Integer[] result = instance.toArray(pole);
-        assertArrayEquals(expResult, result); //TODO Další toArray testy, iterátor, toArray funkce a testy na vyjímky!
+        assertArrayEquals(expResult, result);
     }
 
     /**
@@ -233,14 +269,14 @@ public class SeznamTest {
     @Test
     public void testToArray_Function() throws KolekceException {
         System.out.println("toArray");
-        Function s = null;
         Seznam instance = new Seznam();
-        Object[] expResult = null;
-        Object[] result = instance.toArray(s);
+        Function<Integer, Object[]> s = Object[]::new;
+        instance.pridej(1);
+        Object[] expResult = new Integer[1];
+        expResult[0] = 1;
+        Object[] result = instance.toArray();
         assertArrayEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+    } //Todo ToArray reference function
 
     /**
      * Test of iterator method, of class Seznam.
@@ -260,56 +296,90 @@ public class SeznamTest {
     }
 
     //TODO Testy na nepovinné metody
-//    /**
-//     * Test of nastavPrvni method, of class Seznam.
-//     */
-//    @Test
-//    public void testNastavPrvni() throws Exception {
-//        System.out.println("nastavPrvni");
-//        Seznam instance = new Seznam();
-//        instance.nastavPrvni();
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of prejdiNaDalsi method, of class Seznam.
-//     */
-//    @Test
-//    public void testPrejdiNaDalsi() throws Exception {
-//        System.out.println("prejdiNaDalsi");
-//        Seznam instance = new Seznam();
-//        instance.prejdiNaDalsi();
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of jeDalsi method, of class Seznam.
-//     */
-//    @Test
-//    public void testJeDalsi() throws Exception {
-//        System.out.println("jeDalsi");
-//        Seznam instance = new Seznam();
-//        boolean expResult = false;
-//        boolean result = instance.jeDalsi();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
-//
-//    /**
-//     * Test of zpristupni method, of class Seznam.
-//     */
-//    @Test( )
-//    public void testZpristupni() throws Exception {
-//        System.out.println("zpristupni");
-//        Seznam instance = new Seznam();
-//        Object expResult = null;
-//        Object result = instance.zpristupni();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
-//    }
+    /**
+     * Test of nastavPrvni method, of class Seznam.
+     */
+    @Test
+    public void testNastavPrvni() throws Exception {
+        System.out.println("nastavPrvni");
+        Seznam instance = new Seznam();
+        instance.pridej("Test");
+        instance.nastavPrvni();
+        Object expResult = "Test";
+        Object result = instance.zpristupni();
+        assertEquals(expResult, result);
+    }
+    
+    @Test(expected = KolekceException.class)
+    public void testNastavPrvniException() throws KolekceException {
+        System.out.println("nastavPrvniException");
+        Seznam instance = new Seznam();
+        instance.nastavPrvni();
+    }
+
+    /**
+     * Test of prejdiNaDalsi method, of class Seznam.
+     */
+    @Test
+    public void testPrejdiNaDalsi() throws Exception {
+        System.out.println("prejdiNaDalsi");
+        Seznam instance = new Seznam();
+        instance.pridej("Test", "Test2");
+        instance.nastavPrvni();
+        instance.prejdiNaDalsi();
+        Object expResult = "Test2";
+        Object result = instance.zpristupni();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of jeDalsi method, of class Seznam.
+     */
+    @Test
+    public void testJeDalsi() throws Exception {
+        System.out.println("jeDalsi");
+        Seznam instance = new Seznam();
+        instance.pridej("Test");
+        instance.nastavPrvni();
+        boolean expResult = false;
+        boolean result = instance.jeDalsi();
+        assertEquals(expResult, result);
+        
+        instance.pridej("Test2");
+        expResult = true;
+        result = instance.jeDalsi();
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of zpristupni method, of class Seznam.
+     */
+    @Test( )
+    public void testZpristupni() throws Exception {
+        System.out.println("zpristupni");
+        Seznam instance = new Seznam();
+        instance.pridej("Test");
+        instance.nastavPrvni();
+        Object expResult = "Test";
+        Object result = instance.zpristupni();
+        assertEquals(expResult, result);
+    }
+    
+    @Test( )
+    public void testOdeber() throws Exception {
+        System.out.println("odeber");
+        Seznam instance = new Seznam();
+        instance.pridej("Test");
+        instance.pridej("Test2");
+        instance.nastavPrvni();
+        instance.prejdiNaDalsi();
+        Object expResult = "Test2";
+        Object result = instance.odeber();
+        assertEquals(expResult, result);
+        assertEquals(1, instance.getPocet());
+        expResult = "Test";
+        result = instance.zpristupni();
+        assertEquals(expResult, result);
+    }
 
 }

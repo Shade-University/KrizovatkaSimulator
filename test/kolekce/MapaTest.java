@@ -39,7 +39,6 @@ public class MapaTest {
     public void vlozTest() throws KolekceException {
         Mapa<String, Integer> map = new Mapa<>();
         map.vloz("Test", 1);
-        assertEquals(1, map.getSize());
         int result = map.dej("Test");
         assertEquals(1, result);
     }
@@ -58,11 +57,21 @@ public class MapaTest {
         map.vloz("Test", 1);
         int result = map.odeber("Test");
         assertEquals(1, result);
-        assertEquals(0, map.getSize()); //TODO Velká refaktorizace testů, češtiny/angličtiny, testy na exception..
     }
 
     @Test
-    public void iteratorTest() {
-        //TODO Iterátor
+    public void iteratorTest() throws KolekceException {
+        System.out.println("iterator");
+        Mapa<String, Integer> instance = new Mapa();
+        Object[] expData = { "Test1", "Test2", "Test3" };
+        instance.vloz("Test1", 1);
+        instance.vloz("Test2", 2);
+        instance.vloz("Test3", 3);
+        
+        Integer i = 1;
+        for (Integer object : instance) {
+            assertEquals(i, object);
+            i++;
+        }
     }
 }

@@ -85,7 +85,7 @@ public class Seznam<E> implements IKolekce<E> {
     } //Koukáme o dva kroky dopředu
 
     private Prvek najdiPredchozi(Prvek p) throws KolekceException {
-        Prvek predchozi = p;
+        Prvek predchozi = prvni;
         while (predchozi.dalsi != null) {
             if (predchozi.dalsi == aktualni) {
                 return predchozi;
@@ -177,7 +177,7 @@ public class Seznam<E> implements IKolekce<E> {
         if (array.length < pocet) {
             throw new IllegalArgumentException();
         }
-        
+
         int i = 0;
         for (Prvek p = prvni; p != null; p = p.dalsi) {
             array[i++] = p.data;
@@ -192,7 +192,12 @@ public class Seznam<E> implements IKolekce<E> {
 
     @Override
     public E[] toArray(Function<Integer, E[]> createFunction) {
-        return createFunction.apply(pocet);
+        E[] result = createFunction.apply(pocet);
+        int i = 0;
+        for (Prvek p = prvni; p != null; p = p.dalsi) {
+            result[i++] = p.data;
+        }
+        return result;
     }
 
     @Override
@@ -215,6 +220,9 @@ public class Seznam<E> implements IKolekce<E> {
         if (aktualni == null) {
             throw new KolekceException("Není nastaven aktuální prvek");
         }
+        /*if(aktualni.dalsi == null){
+            throw new KolekceException("Další prvek neexistuje");
+        } */
 
         aktualni = aktualni.dalsi;
     }
@@ -243,12 +251,15 @@ public class Seznam<E> implements IKolekce<E> {
         }
 
         Prvek p = aktualni;
-
-        aktualni = najdiPredchozi(aktualni);
+        if (aktualni == prvni) {
+            aktualni = null;
+        } else {
+            aktualni = najdiPredchozi(aktualni);
+        }
         pocet--;
         return p.data;
     }
-
+    
     private class mujIterator implements Iterator<E> {
 
         Prvek index = prvni;
@@ -268,20 +279,6 @@ public class Seznam<E> implements IKolekce<E> {
 
             throw new NoSuchElementException();
         }
-
-        @Override
-        public void remove() {
-            if (index == null || aktualni == null) {
-                throw new IllegalStateException();
-            }
-            if (aktualni == prvni) {
-                prvni = index;
-            }
-            if (aktualni == posledni) {
-                prvni = null;
-            } //TODO ????
-        }
-
     }
 
 }
