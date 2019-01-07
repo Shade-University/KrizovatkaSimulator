@@ -27,7 +27,7 @@ public class Casovac {
     private IFronta<Posluchac> posluchaci;
     private volatile boolean running;
 
-    public static Casovac instance() {
+    public static Casovac instance() throws KolekceException {
         if (instance == null) {
             synchronized (Casovac.class) {
                 if (instance == null) {
@@ -53,14 +53,13 @@ public class Casovac {
         }
     }
 
-    private Casovac() {
+    private Casovac() throws KolekceException {
         
             time = 0;
             timer = new Timer(true);
             timer.scheduleAtFixedRate(new Task(), 0, PERIODA);
             posluchaci = new Fronta<>();
-            running = false;
-        
+            running = false;       
     }
 
     public synchronized void pridej(Posluchac posluchac) {

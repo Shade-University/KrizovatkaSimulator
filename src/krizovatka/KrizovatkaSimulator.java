@@ -1,83 +1,159 @@
 
 package krizovatka;
 
+import casovani.Casovac;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kolekce.IFronta;
+import kolekce.IMapa;
+import kolekce.KolekceException;
+import kolekce.Mapa;
 
 /**
  *
  * @author 
  */
 public class KrizovatkaSimulator implements IKrizovatka{
+    private final long DEFAULTNI_CETNOST = 30; //Četnost vozidel za minut
+    private final long DEFAULTNI_DOBA_PRUJEZDU = 500;
+    private final long DEFAULTNI_DOBA_SEMAFORU = 5000;
 
+    IMapa<Smer, FrontaAut> fronty;
+    IMapa<SmerPrujezdu, RadicOdjezdu> radiceOdjezdu;
+    IMapa<Smer, RadicPrijezdu> radicePrijezdu;
+    
+    RadicSemafor semafor;
+    
+    public KrizovatkaSimulator() throws KolekceException{
+        fronty = new Mapa();
+        radiceOdjezdu = new Mapa();
+        radicePrijezdu = new Mapa();      
+        naplnFronty();  
+        
+        semafor = new RadicSemafor(DEFAULTNI_DOBA_SEMAFORU,
+                DEFAULTNI_DOBA_SEMAFORU,
+                radiceOdjezdu.dej(SmerPrujezdu.SEVER_JIH),
+                radiceOdjezdu.dej(SmerPrujezdu.VYCHOD_ZAPAD));
+        semafor.setHlaseni((s) -> System.out.println("Zeleně svítí: " + s));
+        
+        semafor.start();
+    }
+    
+    private void naplnFronty() throws KolekceException{
+        for (Smer smer : Smer.values()) {
+            FrontaAut fronta = new FrontaAut(smer);
+            fronty.vloz(smer, fronta);
+            radicePrijezdu.vloz(smer,new RadicPrijezdu(DEFAULTNI_CETNOST, fronta));
+        }
+        
+        radiceOdjezdu.vloz(SmerPrujezdu.SEVER_JIH,
+                new RadicOdjezdu(DEFAULTNI_DOBA_PRUJEZDU, SmerPrujezdu.SEVER_JIH,
+                        fronty.dej(Smer.SEVER), fronty.dej(Smer.JIH)));
+        radiceOdjezdu.vloz(SmerPrujezdu.VYCHOD_ZAPAD,
+                new RadicOdjezdu(DEFAULTNI_DOBA_PRUJEZDU, SmerPrujezdu.VYCHOD_ZAPAD,
+                        fronty.dej(Smer.VYCHOD), fronty.dej(Smer.ZAPAD)));
+    }
+    
+    
     @Override
     public void setSemaforDobaZelena(SmerPrujezdu prujezd, long x) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        switch (prujezd){
+            case SEVER_JIH:
+                semafor.setCasSeverJih(x);
+                break;
+            case VYCHOD_ZAPAD:
+                semafor.setCasVychodZapad(x);
+                break;
+        }
     }
 
     @Override
     public long getSemaforDobaZelena(SmerPrujezdu prujezd) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        long output = 0;
+        switch (prujezd){
+            case SEVER_JIH:
+                output = semafor.getCasSeverJih();
+                break;
+            case VYCHOD_ZAPAD:
+                output = semafor.getCasVychodZapad();
+                break;
+        }
+        return output;
     }
 
     @Override
     public void setCetnostPrijezdu(Smer prijezd, long cetnostA) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        radicePrijezdu.dej(prijezd).setCetnost(cetnostA);
     }
 
     @Override
     public long getCetnostPrijezdu(Smer prijezd) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return radicePrijezdu.dej(prijezd).getCetnost();
     }
 
     @Override
     public void setDobaPrujezdu(long s) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for (RadicOdjezdu radicOdjezdu : radiceOdjezdu) {
+            radicOdjezdu.setDobaPrujezdu(s);
+        }
     }
 
     @Override
     public long getDobaPrujezdu() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return radiceOdjezdu.dej(SmerPrujezdu.SEVER_JIH).getDobaPrujezdu();
     }
 
     @Override
     public int getPocetCekajicichZeSmeru(Smer smer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return fronty.dej(smer).getPocet();
     }
 
     @Override
     public IFronta<Auto> getFrontaSmeru(Smer smer) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return fronty.dej(smer);
     }
 
     @Override
     public void setHlaseniPrijezduZeSmeru(Smer smer, Consumer<Auto> hlaseni) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        fronty.dej(smer).setHlaseniPrijezdu(hlaseni);
     }
 
     @Override
     public void setHlaseniOdjezduZeSmeru(Smer smer, Consumer<Auto> hlaseni) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        fronty.dej(smer).setHlaseniOdjezdu(hlaseni);
     }
 
     @Override
     public void setHlaseniSemaforu(Consumer<SmerPrujezdu> hlaseni) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        semafor.setHlaseni(hlaseni);
     }
 
     @Override
     public void start() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            Casovac.instance().start();
+        } catch (KolekceException ex) {
+            Logger.getLogger(KrizovatkaSimulator.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public void stop() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            Casovac.instance().zrus();
+        } catch (KolekceException ex) {
+            Logger.getLogger(KrizovatkaSimulator.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
     public void pause() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         try {
+            Casovac.instance().stop();
+        } catch (KolekceException ex) {
+            Logger.getLogger(KrizovatkaSimulator.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

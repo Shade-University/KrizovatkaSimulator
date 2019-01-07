@@ -108,7 +108,7 @@ public interface IKolekce<E> extends Iterable<E> {
     void pridej(E data) throws KolekceException;
 
     /**
-     * Metoda vlozi serii datovych entit v parametrech metody do kolekce.
+         * Metoda vlozi serii datovych entit v parametrech metody do kolekce.
      * <p>
      * Tato metoda slouzi k usnadneni vkladani serie datovych entit do kolekce v
      * ramci volani jedne metody. Touto {@code default} metodou budou

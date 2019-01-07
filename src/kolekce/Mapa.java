@@ -60,16 +60,19 @@ public class Mapa<K, E> implements IMapa<K, E> {
     @Override
     public E odeber(K klic) throws KolekceException {
         seznam.nastavPrvni();
-        E data = (E) seznam.zpristupni().getData();
+        Prvek p = seznam.zpristupni();
+        if(p.getKlic().equals(klic)){
+            return (E) p.getData();
+        }
         while (seznam.jeDalsi()) {
-            Prvek p = seznam.zpristupni();
+            p = seznam.zpristupni();
             if (p.getKlic().equals(klic)) {
-                data = (E) p.getData(); // Todo proč přetypováváme ?
-                break;
+                return (E) p.getData(); // Todo proč přetypováváme ?
             }
             seznam.prejdiNaDalsi();
         }
-        return data;
+        
+        throw new KolekceException("Prvek není v seznamu");
     }
 
     @Override
@@ -86,7 +89,6 @@ public class Mapa<K, E> implements IMapa<K, E> {
         @Override
         public boolean hasNext() {
             return iterator.hasNext();
-
         }
 
         @Override
@@ -95,7 +97,6 @@ public class Mapa<K, E> implements IMapa<K, E> {
                 p = iterator.next();
                 return (E)p.getData();
             }
-
             throw new RuntimeException();
         }
 

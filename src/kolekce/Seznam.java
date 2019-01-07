@@ -21,7 +21,7 @@ public class Seznam<E> implements IKolekce<E> {
         E data;
 
         public Prvek(E data) {
-            this(null, data); //TODO nějak změnit ?
+            this(null, data);
         }
 
         public Prvek(Prvek dalsi, E data) {
@@ -44,7 +44,6 @@ public class Seznam<E> implements IKolekce<E> {
         if (velikost <= 0) {
             throw new KolekceException("Velikost kolekce je nulová nebo záporná");
         }
-
         this.velikost = velikost;
     }
 
@@ -70,12 +69,6 @@ public class Seznam<E> implements IKolekce<E> {
     }
 
     //private metody
-    private void reset() {
-        prvni = null;
-        posledni = null;
-        pocet = 0;
-    }
-
     private Prvek najdiPredposledni() {
         Prvek p = prvni;
         while (p.dalsi.dalsi != null) {
@@ -84,7 +77,7 @@ public class Seznam<E> implements IKolekce<E> {
         return p.dalsi;
     } //Koukáme o dva kroky dopředu
 
-    private Prvek najdiPredchozi(Prvek p) throws KolekceException {
+    private Prvek najdiPredchozi() throws KolekceException {
         Prvek predchozi = prvni;
         while (predchozi.dalsi != null) {
             if (predchozi.dalsi == aktualni) {
@@ -92,7 +85,6 @@ public class Seznam<E> implements IKolekce<E> {
             }
             predchozi = predchozi.dalsi;
         }
-
         throw new KolekceException("Prvek nebyl nalezen");
     }
 
@@ -127,7 +119,7 @@ public class Seznam<E> implements IKolekce<E> {
 
         Prvek p = prvni;
         if (prvni == posledni) {
-            reset();
+            zrus();
             return p.data;
         } //V seznamu zbyl poslední prvek
 
@@ -144,7 +136,7 @@ public class Seznam<E> implements IKolekce<E> {
 
         Prvek p = posledni;
         if (prvni == posledni) {
-            reset();
+            zrus();
             return p.data;
         } //V seznamu zbyl poslední prvek
 
@@ -254,7 +246,7 @@ public class Seznam<E> implements IKolekce<E> {
         if (aktualni == prvni) {
             aktualni = null;
         } else {
-            aktualni = najdiPredchozi(aktualni);
+            aktualni = najdiPredchozi();
         }
         pocet--;
         return p.data;
