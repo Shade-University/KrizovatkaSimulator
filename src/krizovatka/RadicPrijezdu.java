@@ -17,7 +17,7 @@ public final class RadicPrijezdu {
     private volatile boolean running;
 
     public RadicPrijezdu(long cetnost, FrontaAut fronta) throws KolekceException {
-        setCetnost(cetnost);
+        setCetnost(cetnost); //Nastaví zároven interval
         this.fronta = fronta;
         start();
         Casovac.instance().pridej(() -> {
@@ -52,7 +52,7 @@ public final class RadicPrijezdu {
     }
 
     private long vypocitejInterval(long cetnost) {
-        return (60 * 1000 / cetnost);
+        return (60 * 1000 / cetnost); //Za minutu
     }
 
 }

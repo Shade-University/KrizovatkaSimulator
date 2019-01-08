@@ -1,9 +1,6 @@
 package kolekce;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -67,7 +64,7 @@ public class Mapa<K, E> implements IMapa<K, E> {
         while (seznam.jeDalsi()) {
             p = seznam.zpristupni();
             if (p.getKlic().equals(klic)) {
-                return (E) p.getData(); // Todo proč přetypováváme ?
+                return (E) p.getData();
             }
             seznam.prejdiNaDalsi();
         }

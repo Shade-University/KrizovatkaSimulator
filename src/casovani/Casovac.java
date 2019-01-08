@@ -58,7 +58,7 @@ public class Casovac {
             time = 0;
             timer = new Timer(true);
             timer.scheduleAtFixedRate(new Task(), 0, PERIODA);
-            posluchaci = new Fronta<>();
+            posluchaci = new Fronta<>(); //TODO dát do try, bez KolekceException
             running = false;       
     }
 

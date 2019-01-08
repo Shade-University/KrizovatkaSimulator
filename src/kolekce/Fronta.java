@@ -12,7 +12,7 @@ public class Fronta<E> implements IFronta<E> {
     private final IKolekce<E> seznam;
     
     public Fronta() throws KolekceException {
-        this.seznam = new Seznam(); //TODO Musejí zde být <> ?
+        this.seznam = new Seznam();
     }
     @Override
     public int getPocet() {

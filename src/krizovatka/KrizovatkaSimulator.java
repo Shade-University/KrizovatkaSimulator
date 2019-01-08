@@ -17,7 +17,7 @@ import kolekce.Mapa;
 public class KrizovatkaSimulator implements IKrizovatka{
     private final long DEFAULTNI_CETNOST = 30; //Četnost vozidel za minut
     private final long DEFAULTNI_DOBA_PRUJEZDU = 500;
-    private final long DEFAULTNI_DOBA_SEMAFORU = 5000;
+    private final long DEFAULTNI_DOBA_SEMAFORU = 5000; //Defaultní hodnoty
 
     IMapa<Smer, FrontaAut> fronty;
     IMapa<SmerPrujezdu, RadicOdjezdu> radiceOdjezdu;
@@ -29,18 +29,15 @@ public class KrizovatkaSimulator implements IKrizovatka{
         fronty = new Mapa();
         radiceOdjezdu = new Mapa();
         radicePrijezdu = new Mapa();      
-        naplnFronty();  
+        naplnMapy();  
         
         semafor = new RadicSemafor(DEFAULTNI_DOBA_SEMAFORU,
                 DEFAULTNI_DOBA_SEMAFORU,
                 radiceOdjezdu.dej(SmerPrujezdu.SEVER_JIH),
                 radiceOdjezdu.dej(SmerPrujezdu.VYCHOD_ZAPAD));
-        semafor.setHlaseni((s) -> System.out.println("Zeleně svítí: " + s));
-        
-        semafor.start();
     }
     
-    private void naplnFronty() throws KolekceException{
+    private void naplnMapy() throws KolekceException{
         for (Smer smer : Smer.values()) {
             FrontaAut fronta = new FrontaAut(smer);
             fronty.vloz(smer, fronta);
@@ -142,6 +139,7 @@ public class KrizovatkaSimulator implements IKrizovatka{
     public void stop() {
         try {
             Casovac.instance().zrus();
+            Casovac.instance().stop(); //Stop kompletně zruší křižovatku. 
         } catch (KolekceException ex) {
             Logger.getLogger(KrizovatkaSimulator.class.getName()).log(Level.SEVERE, null, ex);
         }

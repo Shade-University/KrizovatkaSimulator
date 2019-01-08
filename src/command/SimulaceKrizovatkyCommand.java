@@ -45,8 +45,10 @@ public class SimulaceKrizovatkyCommand {
         krizovatka.setHlaseniOdjezduZeSmeru(
                 IKrizovatka.Smer.VYCHOD,
                 s -> System.out.printf("T= %04d: Odjezd z vychodu %s\n", i, s));
+        krizovatka.setHlaseniSemaforu(
+                s -> System.out.println("Zeleně svítí: " + s));
         
-        while (i < 5) {
+        while (true) {
             Thread.sleep(1000);
             i++;
         }
